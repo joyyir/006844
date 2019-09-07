@@ -8,19 +8,21 @@ Conference.checkInService = function(checkInRecorder) {
 
   return {
     checkIn: function(attendee) {
-      attendee.checkIn();
-      return recorder.recordCheckIn(attendee).then(
-        // 성공
-        function onRecordCheckInSucceeded(checkInNumber) {
-          attendee.setCheckInNumber(checkInNumber);
-          return Promise.resolve(checkInNumber);
-        },
-        // 실패
-        function onRecordCheckInFailed(reason) {
-          attendee.undoCheckIn();
-          return Promise.reject(reason);
-        }
-      );
+      return new Promise(function checkInPromise(resolve, reject) {
+        attendee.checkIn();
+        return recorder.recordCheckIn(attendee).then(
+          // 성공
+          function onRecordCheckInSucceeded(checkInNumber) {
+            attendee.setCheckInNumber(checkInNumber);
+            return resolve(checkInNumber);
+          },
+          // 실패
+          function onRecordCheckInFailed(reason) {
+            attendee.undoCheckIn();
+            return reject(reason);
+          }
+        );
+      });
     }
   };
 };
