@@ -9,11 +9,18 @@ Conference.checkInService = function(checkInRecorder) {
   return {
     checkIn: function(attendee) {
       attendee.checkIn();
-      recorder.recordCheckIn(attendee).then(
+      return recorder.recordCheckIn(attendee).then(
         // 성공
-        attendee.setCheckInNumber,
+        function onRecordCheckInSucceeded(checkInNumber) {
+          attendee.setCheckInNumber(checkInNumber);
+          return Promise.resolve(checkInNumber);
+        },
         // 실패
-        attendee.undoCheckIn);
+        function onRecordCheckInFailed(reason) {
+          attendee.undoCheckIn();
+          return Promise.reject(reason);
+        }
+      );
     }
   };
 };
